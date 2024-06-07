@@ -7,7 +7,6 @@ on:
 
 jobs:
   deploy:
-    if: ${{ secrets.GOOGLE_CLOUD_PROJECT_ID != null && secrets.GOOGLE_CLOUD_SA_CREDENTIALS != null && secrets.SERVICE_NAME != null}}
     runs-on: ubuntu-latest
 
     steps:
