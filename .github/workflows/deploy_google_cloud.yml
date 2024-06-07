@@ -1,0 +1,39 @@
+name: Deploy to Google Cloud Run
+
+on:
+  push:
+    branches: [ "master" ]
+  workflow_dispatch: # Allow manual invocation of the workflow from Actions page on GitHub
+
+jobs:
+  deploy:
+    if: ${{ secrets.GOOGLE_CLOUD_PROJECT_ID != null && secrets.GOOGLE_CLOUD_SA_CREDENTIALS != null && secrets.SERVICE_NAME != null}}
+    runs-on: ubuntu-latest
+
+    steps:
+      # Checkout operation copies the actual repository code into the GitHub Actions runtime environment
+      - name: Code Checkout
+        uses: actions/checkout@v2
+
+      # Authentication to Google Cloud using service account credentials
+      - name: Setting up Google Cloud SDK
+        uses: google-github-actions/setup-gcloud@v0.2.0
+        with:
+          project_id: ${{ secrets.GOOGLE_CLOUD_PROJECT_ID }}
+          service_account_key: ${{ secrets.GOOGLE_CLOUD_SA_CREDENTIALS }}
+          export_default_credentials: true
+
+      #Pushing new image to Google Cloud image registry and creating new service for Cloud Run
+      - name: Build and deploy to Google Cloud Run
+        run: |
+          gcloud builds submit --tag gcr.io/$GCLOUD_PROJECT_ID/$GCLOUD_SERVICE_NAME
+          gcloud run deploy $GCLOUD_SERVICE_NAME --image gcr.io/$GCLOUD_PROJECT_ID/$GCLOUD_SERVICE_NAME \
+          --platform managed \
+          --region $GCLOUD_REGION \
+          --allow-unauthenticated \
+          --set-env-vars var1="never gonna give you up" \
+          --set-env-vars var2="never gonna let you down"
+        env:
+          GCLOUD_PROJECT_ID: ${{ secrets.GOOGLE_CLOUD_PROJECT_ID }}
+          GCLOUD_REGION: us-central1
+          GCLOUD_SERVICE_NAME: ${{ secrets.SERVICE_NAME }}
