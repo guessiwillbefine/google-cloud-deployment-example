@@ -32,5 +32,11 @@ class GoogleCloudCicdExampleApplicationTests {
                 .andExpect(MockMvcResultMatchers.jsonPath("$.response").value("How i can say hello if i don't know your name?"));
     }
 
+    @Test
+    void shouldReturn400IfNameIsNull() throws Exception {
+        mvc.perform(get("/api/hello"))
+                .andExpect(MockMvcResultMatchers.status().is4xxClientError());
+    }
+
 }
 
